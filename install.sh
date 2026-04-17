@@ -34,6 +34,23 @@ install_windows() {
   winget install -e --id ByronRaffles.Edge-Dev-Tools
 }
 
+install_wezterm() {
+  if command -v wezterm &> /dev/null; then
+    echo "WezTerm already installed: $(wezterm --version)"
+    return
+  fi
+  echo "Installing WezTerm..."
+  if [ "$OS" = "Linux" ]; then
+    WEZTERM_VERSION=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/wez/wezterm/releases/latest | sed 's|.*/tag/||')
+    WEZTERM_DEB="/tmp/wezterm-${WEZTERM_VERSION}.Ubuntu22.04.deb"
+    curl -fsSL -o "$WEZTERM_DEB" "https://github.com/wez/wezterm/releases/download/${WEZTERM_VERSION}/wezterm-${WEZTERM_VERSION}.Ubuntu22.04.deb"
+    sudo apt install -y "$WEZTERM_DEB"
+    rm -f "$WEZTERM_DEB"
+  elif [ "$OS" = "Darwin" ]; then
+    brew install --cask wezterm
+  fi
+}
+
 if [ "$OS" = "Linux" ]; then
   install_linux
 elif [ "$OS" = "Darwin" ]; then
@@ -63,20 +80,17 @@ rm -f ~/.zshrc
 ln -sf "$DOTDIR/zsh/zshrc" ~/.zshrc
 ln -sf "$DOTDIR" ~/.dotfiles
 
+mkdir -p ~/.config/wezterm
 ln -sf "$DOTDIR/wezterm/config.lua" ~/.config/wezterm/wezterm.lua
+ln -sf "$DOTDIR/wezterm/statusbar.lua" ~/.config/wezterm/statusbar.lua
+ln -sf "$DOTDIR/wezterm/keybindings.lua" ~/.config/wezterm/keybindings.lua
+ln -sf "$DOTDIR/wezterm/layouts.lua" ~/.config/wezterm/layouts.lua
 
-if ! command -v wezterm &> /dev/null; then
-  echo "Installing WezTerm..."
-  if [ "$OS" = "Linux" ]; then
-    curl -sS https://webinstall.dev/wezterm | bash
-  elif [ "$OS" = "Darwin" ]; then
-    brew install --cask wezterm
-  fi
-fi
+install_wezterm
 
 mkdir -p ~/.config/fzf
-if [ ! -f ~/.config/fzf/fzf.zsh ]; then
-  $(brew --prefix)/opt/fzf/install --zsh 2>/dev/null || true
+if [ "$OS" = "Darwin" ] && [ ! -f ~/.config/fzf/fzf.zsh ]; then
+  "$(brew --prefix)/opt/fzf/install" --zsh 2>/dev/null || true
 fi
 
 echo "Setting zsh as default shell..."
