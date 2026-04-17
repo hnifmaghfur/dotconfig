@@ -70,7 +70,57 @@ local function make_left(window, pane)
 end
 
 local function make_right(window, pane)
-  return ''
+  local hostname = wezterm.hostname()
+  local time_str = wezterm.time.now():format('%a %d %b  %H:%M')
+
+  local bat_text = ''
+  local ok, bat_info = pcall(wezterm.battery_info)
+  if ok and bat_info and #bat_info > 0 then
+    local bat = bat_info[1]
+    local level = bat.state_of_charge
+    local icon = level >= 0.9 and ''
+      or level >= 0.7 and ''
+      or level >= 0.4 and ''
+      or level >= 0.1 and ''
+      or ''
+    bat_text = icon .. ' ' .. math.floor(level * 100) .. '%'
+  end
+
+  local e = {}
+
+  -- Hostname segment
+  table.insert(e, { Background = { Color = C.bar_bg } })
+  table.insert(e, { Foreground = { Color = C.hostname_bg } })
+  table.insert(e, { Text = RIGHT_SEP })
+  table.insert(e, { Background = { Color = C.hostname_bg } })
+  table.insert(e, { Foreground = { Color = C.light } })
+  table.insert(e, { Text = '  ' .. hostname .. '  ' })
+
+  if bat_text ~= '' then
+    -- Battery segment
+    table.insert(e, { Background = { Color = C.hostname_bg } })
+    table.insert(e, { Foreground = { Color = C.battery_bg } })
+    table.insert(e, { Text = RIGHT_SEP })
+    table.insert(e, { Background = { Color = C.battery_bg } })
+    table.insert(e, { Foreground = { Color = C.dark } })
+    table.insert(e, { Text = '  ' .. bat_text .. '  ' })
+    -- Datetime follows battery
+    table.insert(e, { Background = { Color = C.battery_bg } })
+    table.insert(e, { Foreground = { Color = C.datetime_bg } })
+    table.insert(e, { Text = RIGHT_SEP })
+  else
+    -- Datetime follows hostname (no battery)
+    table.insert(e, { Background = { Color = C.hostname_bg } })
+    table.insert(e, { Foreground = { Color = C.datetime_bg } })
+    table.insert(e, { Text = RIGHT_SEP })
+  end
+
+  -- Datetime segment
+  table.insert(e, { Background = { Color = C.datetime_bg } })
+  table.insert(e, { Foreground = { Color = C.light } })
+  table.insert(e, { Text = '  ' .. time_str .. '  ' })
+
+  return wezterm.format(e)
 end
 
 function M.apply()
