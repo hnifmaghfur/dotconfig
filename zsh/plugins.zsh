@@ -1,0 +1,18 @@
+plugins=(
+  git
+  docker
+  docker-compose
+  kubectl
+  npm
+  node
+  python
+  pip
+  zsh-autosuggestions
+  zsh-syntax-highlighting
+  sudo
+  extract
+  z
+  history
+  fzf
+  command-not-found
+)
