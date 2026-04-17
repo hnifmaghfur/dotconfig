@@ -9,7 +9,7 @@ DOTDIR="$(cd "$(dirname "$0")" && pwd)"
 
 install_linux() {
   sudo apt update
-  sudo apt install -y git curl wget zsh fzf build-essential
+  sudo apt install -y git curl wget zsh fzf build-essential tmux
 
   if ! command -v eza &> /dev/null; then
     curl -sS https://webinstall.dev/eza | bash
@@ -81,10 +81,14 @@ ln -sf "$DOTDIR/zsh/zshrc" ~/.zshrc
 ln -sf "$DOTDIR" ~/.dotfiles
 
 mkdir -p ~/.config/wezterm
-ln -sf "$DOTDIR/wezterm/config.lua" ~/.config/wezterm/wezterm.lua
-ln -sf "$DOTDIR/wezterm/statusbar.lua" ~/.config/wezterm/statusbar.lua
-ln -sf "$DOTDIR/wezterm/keybindings.lua" ~/.config/wezterm/keybindings.lua
-ln -sf "$DOTDIR/wezterm/layouts.lua" ~/.config/wezterm/layouts.lua
+ln -sf "$DOTDIR/wezterm/wezterm.lua" ~/.config/wezterm/wezterm.lua
+
+mkdir -p ~/.config/tmux
+ln -sf "$DOTDIR/tmux/tmux.conf" ~/.config/tmux/tmux.conf
+
+if [ ! -d ~/.tmux/plugins/tpm ]; then
+  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+fi
 
 install_wezterm
 

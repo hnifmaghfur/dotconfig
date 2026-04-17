@@ -64,8 +64,17 @@ alias tfv='terraform validate'
 
 alias ssh-term='TERM=xterm-256color ssh'
 
+alias t='tmux'
+alias ta='tmux attach'
+alias tl='tmux list-sessions'
+alias tk='tmux kill-server'
+alias tn='tmux new-session -s'
+
 alias wt='wezterm'
 alias wts='wezterm start'
 alias wtssh='wezterm ssh'
 alias wtimg='wezterm imgcat'
 alias wtk='wezterm show-keys'
+
+alias ocd='opencode'
+alias cc='claude'

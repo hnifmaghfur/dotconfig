@@ -8,11 +8,11 @@ plugins=(
   python
   pip
   zsh-autosuggestions
-  zsh-syntax-highlighting
   sudo
   extract
   z
   history
   fzf
   command-not-found
-)
+  zsh-syntax-highlighting
+ )

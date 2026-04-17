@@ -2,16 +2,27 @@ export ZSH="$HOME/.oh-my-zsh"
 
 ZSH_THEME="robbyrussell"
 
+source "$HOME/.dotfiles/zsh/plugins.zsh"
+
 source $ZSH/oh-my-zsh.sh
 
 source "$HOME/.dotfiles/zsh/env.zsh"
-source "$HOME/.dotfiles/zsh/plugins-loaded.zsh"
 source "$HOME/.dotfiles/zsh/completion.zsh"
 source "$HOME/.dotfiles/zsh/options.zsh"
 source "$HOME/.dotfiles/zsh/keybindings.zsh"
 source "$HOME/.dotfiles/zsh/function.zsh"
 
+source "$HOME/.dotfiles/zsh/aliases.zsh"
 source ~/.zsh_aliases 2>/dev/null
 source ~/.zsh_env 2>/dev/null
 source ~/.zsh_local 2>/dev/null
+
 [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
+
+export PATH=/home/hanif/.opencode/bin:$PATH
+export PATH="/usr/local/go/bin:$PATH"
+export PATH="$HOME/.nvm/versions/node/v24.11.1/bin:$PATH"
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
