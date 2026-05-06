@@ -9,6 +9,9 @@ alias grep='grep --color=auto'
 
 alias sz='source ~/.zshrc'
 alias agy='antigravity'
+alias cl='clear'
+alias gr.='go run .'
+alias nrd='npm run dev'
 
 alias showalias='type'
 
