@@ -1,10 +1,13 @@
-preexec() {
-  local cmd="$1"
+_show_alias_expansion() {
+  [[ "$1" =~ "^_zsh_autosuggest" ]] && return
+  local cmd="${1%% *}"
   local alias_val="$(alias "$cmd" 2>/dev/null)"
   if [[ -n "$alias_val" ]]; then
     echo "${alias_val#alias }"
   fi
 }
+autoload -Uz add-zsh-hook
+add-zsh-hook preexec _show_alias_expansion
 
 th() {
   cat <<'EOF'
