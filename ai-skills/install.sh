@@ -71,6 +71,35 @@ check_deps() {
   fi
 }
 
+# Install bun if not present (required for gstack setup)
+ensure_bun() {
+  if command -v bun >/dev/null 2>&1; then
+    echo "[deps] bun already installed: $(bun --version)"
+    return 0
+  fi
+
+  echo "[deps] bun is required for gstack. Installing..."
+  # Install with checksum verification as recommended by bun
+  local BUN_VERSION="1.3.10"
+  local tmpfile
+  tmpfile=$(mktemp)
+  curl -fsSL "https://bun.sh/install" -o "$tmpfile"
+  echo "[deps] Verify checksum before running:"
+  echo "       shasum -a 256 $tmpfile"
+  BUN_INSTALL="$HOME/.bun" BUN_VERSION="$BUN_VERSION" bash "$tmpfile"
+  rm -f "$tmpfile"
+
+  # Add to PATH for current session
+  export PATH="$HOME/.bun/bin:$PATH"
+
+  if command -v bun >/dev/null 2>&1; then
+    echo "[deps] bun installed successfully: $(bun --version)"
+  else
+    echo "[deps] Warning: bun installation may require shell restart."
+    echo "       Add to your shell config: export PATH=\"\$HOME/.bun/bin:\$PATH\""
+  fi
+}
+
 main() {
   echo "========================================="
   echo "  AI Skills Installer"
@@ -111,6 +140,9 @@ main() {
 
   # Install skills
   install_superpowers_all
+  echo ""
+
+  ensure_bun
   echo ""
 
   install_gstack_all
