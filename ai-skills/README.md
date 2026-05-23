@@ -1,6 +1,6 @@
-# AI Skills Installer
+# AI Skills
 
-Install AI agent productivity skills across all detected coding agents.
+AI agent productivity skills reference for all supported coding agents.
 
 ## Included Skills
 
@@ -26,34 +26,17 @@ Install AI agent productivity skills across all detected coding agents.
 
 ## Usage
 
-### Via main install.sh
+### Via AI Agent Skill
 
-The main installer auto-discovers `ai-skills` as a component:
+Give the `SKILL.md` file to any AI Agent as a system prompt or skill reference:
 
-```bash
-# Install everything (interactive menu)
-./install.sh
-
-# Or select ai-skills from the menu
+```
+Read ai-skills/SKILL.md and install the AI skills for the detected agent.
 ```
 
-### Direct usage
+The AI Agent will auto-detect which coding agent is running and execute the relevant install instructions.
 
-```bash
-# Auto-detect all agents and install skills
-./ai-skills/install.sh
-
-# Preview without making changes
-./ai-skills/install.sh --dry-run
-
-# List detected agents
-./ai-skills/install.sh --list
-
-# Skip rtk
-./ai-skills/install.sh --skip-rtk
-```
-
-## Manual Steps
+### Manual Steps
 
 Some skills require manual interaction in the AI agent:
 
@@ -94,5 +77,5 @@ Install your preferred AI coding agent first, then re-run this installer.
 **npx not found?**
 Install Node.js: https://nodejs.org/
 
-**Permission denied?**
-Make sure the script is executable: `chmod +x ai-skills/install.sh`
+**No AI agent detected?**
+Install your preferred AI coding agent first, then provide `SKILL.md` to the agent.
