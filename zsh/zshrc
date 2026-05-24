@@ -38,3 +38,6 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 
 # opencode
 export PATH=/home/nadhifa/.opencode/bin:$PATH
+
+# gstack (installed via ai-skills/install-integration.sh)
+[ -d "$HOME/.claude/skills/gstack/bin" ] && export PATH="$HOME/.claude/skills/gstack/bin:$PATH"

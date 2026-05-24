@@ -163,7 +163,29 @@ When the user says "install my AI skills", run this workflow:
 1. **Detect** the active agent (see "Detect Active Agent").
 2. **Report** which agent was detected and which skills will be installed.
 3. **Execute** the install commands for superpowers → gstack → get-shit-done → rtk (unless skipped).
-4. **Summarize** what was installed and note any manual steps or restarts required.
+4. **Run the integration auto-activation bootstrap**: `bash ai-skills/install-integration.sh` (see "Auto-activation" below).
+5. **Summarize** what was installed and note any manual steps or restarts required.
+
+## Auto-activation (integration-router)
+
+After installing the three systems above, run the bootstrap to make the GStack × GSD × Superpower integration auto-activate per-prompt:
+
+```bash
+bash ai-skills/install-integration.sh
+```
+
+What it does:
+- Installs `integration-router` SKILL into `~/.claude/skills/` (and references it from `AGENTS.md`/`GEMINI.md` for non-Claude agents).
+- Installs a `UserPromptSubmit` hook into Claude Code that detects dev-workflow intents (build/fix/ship/refactor in Indonesian or English) and injects a short routing hint into the prompt context — analogous to how RTK transparently rewrites Bash commands.
+- Adds `~/.claude/skills/gstack/bin` to `PATH` via `~/.zshrc`.
+- Idempotent — safe to re-run.
+
+After install: `source ~/.zshrc` then **restart the AI agent** so hooks/skills load. Test by typing "buat fitur X" — the hook should inject a routing hint that points to `/gsd-plan-phase`.
+
+Source files:
+- Skill: `ai-skills/skills/integration-router/SKILL.md`
+- Hook : `ai-skills/hooks/integration-router-hook.sh`
+- Spec : `docs/superpowers/specs/2026-05-24-integration-router-design.md`
 
 ## Dependencies Check
 
@@ -173,6 +195,148 @@ Before installing, ensure the following are available. If missing, tell the user
 - `curl`
 - `npx` (Node.js/npm) — required only for get-shit-done
 - `bun` — required for gstack setup (auto-installed by gstack setup if missing)
+
+## Integration: GStack + GSD + Superpower
+
+These three systems are designed to work together. Here is how they divide responsibility and how an AI agent should orchestrate them.
+
+### Responsibility Split
+
+| System | Role | Question it answers |
+|--------|------|--------------------|
+| **GSD (get-shit-done)** | Project manager & workflow engine | "What must be done, in what order, and what is the current progress?" |
+| **Superpower** | Execution engine | "How do I implement this task concretely, step by step?" |
+| **GStack** | Quality gate & technical toolkit | "Does this work correctly? Is it ready to ship?" |
+
+### Golden Rule
+
+**GSD decides WHAT and WHEN. Superpower executes HOW. GStack verifies IF IT IS CORRECT.**
+Never let Superpower run without a GSD plan. Never ship without a GStack gate.
+
+### Ideal Workflow
+
+```
+GSD: /gsd-new-project          → Initialize ROADMAP.md + PROJECT.md
+GSD: /gsd-plan-phase            → Create PLAN.md for the active phase
+
+     ↓ (handoff to execution)
+
+Superpower: subagent-driven-development
+            → Execute PLAN.md task-by-task
+            → Update checkboxes & STATE.md per task
+
+     ↓ (every milestone or completed task)
+
+GStack: /qa                     → Verify behavioral correctness
+GStack: /review                 → Code review the diff
+GStack: /design-review          → (if UI/UX involved)
+
+     ↓ (all gates passed)
+
+GSD: /gsd-verify-work           → Conversational UAT
+GStack: /ship                   → PR, CHANGELOG, VERSION bump
+GStack: /land-and-deploy        → Merge & production verification
+
+     ↓ (before session ends)
+
+GStack: /context-save           → Save full working state
+```
+
+### Skill Routing: When to Trigger What
+
+Append this section to the project's `AGENTS.md` after installing skills:
+
+```markdown
+## Skill Routing — Superpower + GStack + GSD
+
+### GSD (Planning & Tracking)
+- Initialize new project               → /gsd-new-project
+- Check progress & next step           → /gsd-progress --next
+- Add/edit phase in roadmap            → /gsd-phase
+- Create detailed phase plan           → /gsd-plan-phase
+- Execute structured plan              → /gsd-execute-phase
+- Pause work & handoff context         → /gsd-pause-work
+
+### Superpower (Execution)
+- Execute PLAN.md task-by-task       → superpowers:subagent-driven-development
+- Quick execution (skip review)        → superpowers:executing-plans
+
+### GStack (Quality Gates)
+- Bug / unexpected behavior          → /investigate
+- Test site / app behavior             → /qa (test + fix loop)
+- Report bugs only (no fix)          → /qa-only
+- Code review before merge             → /review
+- Visual QA / polish                   → /design-review
+- Auto-review pipeline                 → /autoplan
+- Deploy to production                 → /ship or /land-and-deploy
+
+### Bridge (Session Management)
+- Save progress session              → /context-save
+- Resume previous session            → /context-restore
+```
+
+### Handoff Patterns
+
+#### Pattern 1: Phase Gate (Recommended)
+Every GSD phase has a quality gate before advancing to the next phase.
+
+```markdown
+## Phase X: [Name]
+
+### Pre-execution
+- [ ] /gsd-plan-phase → generate PLAN.md
+- [ ] /autoplan → review plan from CEO + Eng + Design + DX perspective
+
+### Execution
+- [ ] superpowers:subagent-driven-development → execute PLAN.md
+
+### Quality Gates (per milestone)
+- [ ] /qa → behavioral testing
+- [ ] /review → diff review
+- [ ] /gsd-verify-work → UAT confirmation
+
+### Exit Gate
+- [ ] /ship → create PR
+- [ ] /context-save → archive session
+```
+
+#### Pattern 2: Continuous Checkpoint
+Use when a phase spans multiple sessions.
+
+```
+Task A done → /context-save "feat/auth-login done"
+Task B done → /context-save "feat/auth-logout done"
+...
+Phase done  → /ship + /context-save "phase-3-complete"
+```
+
+#### Pattern 3: Context Recovery
+When starting a new session:
+
+```
+/context-restore              → Load last saved state
+/gsd-progress --forensic      → Run integrity audit
+/gsd-progress --next           → Advance to next task
+```
+
+### Anti-Patterns to Avoid
+
+| Anti-Pattern | Risk | Fix |
+|--------------|------|-----|
+| Superpower executes without GSD plan | Scope creep, untracked work | Always run /gsd-plan-phase first |
+| Skip /qa because "I am sure" | Production regression | /qa is a mandatory pre-ship gate |
+| No /context-save before ending session | Lost context, duplicate work | /context-save at every session end |
+| GSD phase without exit criteria | Phase never finishes | Define /gsd-verify-work criteria in PLAN.md |
+| Mix planning & execution in one session | Cognitive overload, unsaved plan | Separate: plan session → save → execute session |
+
+### Integration Checklist for New Repos
+
+- [ ] Create `AGENTS.md` with skill routing rules (copy from above)
+- [ ] Create `ROADMAP.md` via /gsd-new-project
+- [ ] Configure continuous checkpoint: `gstack-config set checkpoint_mode continuous`
+- [ ] Test end-to-end: create one small phase → plan → execute → qa → ship
+
+---
 
 ## Quick Reference
 
