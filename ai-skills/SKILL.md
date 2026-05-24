@@ -187,6 +187,29 @@ Source files:
 - Hook : `ai-skills/hooks/integration-router-hook.sh`
 - Spec : `docs/superpowers/specs/2026-05-24-integration-router-design.md`
 
+### Multi-device setup
+
+The integration is **globally installed per device** (writes to `~/.claude/`, `~/.config/`, `~/.codeium/`, etc.), not per-project. To replicate on a new device:
+
+```bash
+# 1. Clone this dotconfig repo
+git clone git@github.com:hnifmaghfur/dotconfig.git ~/dotconfig
+
+# 2. Install supported AI agents you want to use
+#    (Claude Code, OpenCode, Codex, Gemini, Cursor, Windsurf, ...)
+
+# 3. Install the underlying skills first (one-time per device)
+#    See "Install Per Skill" section above.
+
+# 4. Run integration bootstrap — auto-detects all installed agents
+bash ~/dotconfig/ai-skills/install-integration.sh
+
+# 5. Reload shell + restart your AI agent
+source ~/.zshrc
+```
+
+Detected agents on this device get the integration installed automatically. Re-run after installing a new agent — the installer is idempotent.
+
 ## Dependencies Check
 
 Before installing, ensure the following are available. If missing, tell the user to install them first.

@@ -46,8 +46,10 @@ AGENTS=()
 [ -d "$HOME/.codex" ] && AGENTS+=("codex")
 [ -d "$HOME/.config/gemini" ] && AGENTS+=("gemini")
 [ -d "$HOME/.cursor" ] && AGENTS+=("cursor")
+[ -d "$HOME/.codeium/windsurf" ] && AGENTS+=("windsurf")
 [ -d "$HOME/.hermes" ] && AGENTS+=("hermes")
 [ -d "$HOME/.kilocode" ] && AGENTS+=("kilocode")
+[ -d "$HOME/.aider" ] && AGENTS+=("aider")
 
 if [ ${#AGENTS[@]} -eq 0 ]; then
   err "No supported AI agent detected (looked for ~/.claude, ~/.config/opencode, etc.)"
@@ -187,8 +189,13 @@ for agent in "${AGENTS[@]}"; do
     codex)    install_agents_md "$HOME/.codex/AGENTS.md" ;;
     gemini)   install_agents_md "$HOME/.config/gemini/GEMINI.md" ;;
     cursor)   install_agents_md "$HOME/.cursor/AGENTS.md" ;;
+    windsurf)
+      mkdir -p "$HOME/.codeium/windsurf/memories"
+      install_agents_md "$HOME/.codeium/windsurf/memories/global_rules.md"
+      ;;
     hermes)   install_agents_md "$HOME/.hermes/AGENTS.md" ;;
     kilocode) install_agents_md "$HOME/.kilocode/AGENTS.md" ;;
+    aider)    install_agents_md "$HOME/.aider/AGENTS.md" ;;
   esac
 done
 
